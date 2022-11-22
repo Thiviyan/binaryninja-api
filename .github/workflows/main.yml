@@ -35,19 +35,19 @@ jobs:
         
         
     - name: config
-      run: cmake -B build
+      run: cmake -S . -B build
       
     - name: build
-      run: cmake --build build --config Release
+      run: cmake --build build -j8
       
     - name: Tar files
-      run: tar -cvf VMProfiler-QT.tar build/Release
+      run: tar -cvf binary-ninja.tar build/debug
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
         name: my-artifact
-        path: VMProfiler-QT.tar
+        path: binary-ninja.tar 
       
     
     - name: Compress artifacts
