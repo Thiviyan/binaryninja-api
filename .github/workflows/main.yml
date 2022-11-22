@@ -1,0 +1,72 @@
+name: Visual Studio
+
+on: [push, pull_request]
+
+env:
+  QT_VERSION:     "6.0.0"
+  BUILD_TYPE:      "Release"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+                      
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        host: "windows"
+        target: "desktop"
+        version: "6.0.0"
+        arch: "win64_msvc2019_64"
+        dir: "${{github.workspace}}/qt"
+        install-deps: "true"
+        
+    - name: Set Qt path and refresh
+      run: |
+          refreshenv
+        #Write-Output (Get-Command g++.exe).Path
+        #g++.exe --version
+        
+        
+    - name: config
+      run: cmake -B build
+      
+    - name: build
+      run: cmake --build build --config Release
+      
+    - name: Tar files
+      run: tar -cvf VMProfiler-QT.tar build/Release
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: my-artifact
+        path: VMProfiler-QT.tar
+      
+    
+    - name: Compress artifacts
+      uses: papeloto/action-zip@v1
+      if: ${{ startsWith(github.ref, 'refs/tags/') }}
+      with:
+        files: build/Release
+        dest: ${{ github.event.repository.name }}-${{ github.sha }}.zip
+      
+    - uses: actions/upload-artifact@v3
+      with:
+        name: my-artifact
+        path: build/Release/
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: ${{ startsWith(github.ref, 'refs/tags/') }}
+      with:
+        prerelease: ${{ !startsWith(github.ref, 'refs/tags/v') || contains(github.ref, '-pre') }}
+        files: ${{ github.event.repository.name }}-${{ github.sha }}.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
