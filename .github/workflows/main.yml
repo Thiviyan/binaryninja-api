@@ -3,7 +3,7 @@ name: Visual Studio
 on: [push, pull_request]
 
 env:
-  QT_VERSION:     "6.0.0"
+  QT_VERSION:     "6.4.1"
   BUILD_TYPE:      "Release"
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
       with:
         host: "windows"
         target: "desktop"
-        version: "6.0.0"
+        version: "6.4.1"
         arch: "win64_msvc2019_64"
         dir: "${{github.workspace}}/qt"
         install-deps: "true"
